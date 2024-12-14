@@ -3,7 +3,7 @@
  */
 
 let express = require('express');
-let router = express.Router();
+let router = express();
 let $ = require('jquery');
 const request = require('request');
 const moment = require('moment');
@@ -117,86 +117,87 @@ router.post('/create_payment_url', async (req, res, next) => {
 });
 
 
-// router.get('/vnpay_return', async function (req, res, next) {
-//     let vnp_Params = req.query;
+router.get('/vnpay_return', async function (req, res, next) {
+    let vnp_Params = req.query;
 
-//     let secureHash = vnp_Params['vnp_SecureHash'];
+    let secureHash = vnp_Params['vnp_SecureHash'];
 
-//     delete vnp_Params['vnp_SecureHash'];
-//     delete vnp_Params['vnp_SecureHashType'];
+    delete vnp_Params['vnp_SecureHash'];
+    delete vnp_Params['vnp_SecureHashType'];
 
-//     vnp_Params = sortObject(vnp_Params);
+    vnp_Params = sortObject(vnp_Params);
 
-//     let config = require('config');
-//     let tmnCode = config.get('vnp_TmnCode');
-//     let secretKey = config.get('vnp_HashSecret');
+    let config = require('config');
+    let tmnCode = config.get('vnp_TmnCode');
+    let secretKey = config.get('vnp_HashSecret');
 
-//     let querystring = require('qs');
-//     let signData = querystring.stringify(vnp_Params, { encode: false });
-//     let crypto = require("crypto");
-//     let hmac = crypto.createHmac("sha512", secretKey);
-//     let signed = hmac.update(new Buffer.from(signData, 'utf-8')).digest("hex");
+    let querystring = require('qs');
+    let signData = querystring.stringify(vnp_Params, { encode: false });
+    let crypto = require("crypto");
+    let hmac = crypto.createHmac("sha512", secretKey);
+    let signed = hmac.update(new Buffer.from(signData, 'utf-8')).digest("hex");
 
 
-//     if (secureHash === signed) {
-//         // Kết nối database
-//         const db = require('../config/db');
-//         const orderId = vnp_Params['vnp_TxnRef'];
-//         const amount = parseFloat(vnp_Params['vnp_Amount']) / 100; // VNPay trả về số tiền nhân 100
-//         const rspCode = vnp_Params['vnp_ResponseCode'];
-//         const transactionDate = vnp_Params['vnp_PayDate'];
-//         console.log('Amount from VNPay:', amount);
-//         console.log('Amount from VNPay:', orderId);
-//         console.log('Response Code:', vnp_Params['vnp_ResponseCode']);
+    if (secureHash === signed) {
+        // // Kết nối database
+        // const db = require('../config/db');
+        // const orderId = vnp_Params['vnp_TxnRef'];
+        // const amount = parseFloat(vnp_Params['vnp_Amount']) / 100; // VNPay trả về số tiền nhân 100
+        // const rspCode = vnp_Params['vnp_ResponseCode'];
+        // const transactionDate = vnp_Params['vnp_PayDate'];
+        // console.log('Amount from VNPay:', amount);
+        // console.log('Amount from VNPay:', orderId);
+        // console.log('Response Code:', vnp_Params['vnp_ResponseCode']);
 
-//         try {
-//             // Kiểm tra mã đơn hàng trong CSDL
-//             const [order] = await db.query('SELECT * FROM donhang WHERE DonHangID = ?', [orderId]);
-//             if (!order) {
-//                 console.log('aa');
-//                 return res.render('success', { code: '01', message: 'Order not found' });
-//             }
+        // try {
+        //     // Kiểm tra mã đơn hàng trong CSDL
+        //     const [order] = await db.query('SELECT * FROM donhang WHERE DonHangID = ?', [orderId]);
+        //     if (!order) {
+        //         console.log('aa');
+        //         return res.render('success', { code: '01', message: 'Order not found' });
+        //     }
 
-//             // Kiểm tra trạng thái giao dịch trước khi cập nhật
-//             if (order.TrangThai === 'paid') {
-//                 console.log('bb');
-//                 return res.render('success', { code: '02', message: 'Order already paid' });
-//             }
+        //     // Kiểm tra trạng thái giao dịch trước khi cập nhật
+        //     if (order.TrangThai === 'paid') {
+        //         console.log('bb');
+        //         return res.render('success', { code: '02', message: 'Order already paid' });
+        //     }
 
-//             // Xử lý giao dịch
-//             if (rspCode === '00') {
-//                 // Giao dịch thành công
-//                 await db.query('UPDATE donhang SET TrangThai = ? WHERE DonHangID = ?', ['paid', orderId]);
-//                 await db.query(`INSERT INTO thanhtoan (TenTT, NoiDungTT, NgayTT, DonHangID, Status)
-//                     VALUES (?, ?, ?, ?, ?)`, [
-//                     'VNPay Payment',
-//                     vnp_Params['vnp_OrderInfo'],
-//                     transactionDate,
-//                     orderId,
-//                     'Success'
-//                 ]);
-//                 res.render('success', { code: vnp_Params['vnp_ResponseCode'] })
-//             } else {
-//                 // Giao dịch thất bại
-//                 await db.query(`INSERT INTO thanhtoan (TenTT, NoiDungTT, NgayTT, DonHangID, Status)
-//                     VALUES (?, ?, ?, ?, ?)`, [
-//                     'VNPay Payment',
-//                     vnp_Params['vnp_OrderInfo'],
-//                     transactionDate,
-//                     orderId,
-//                     'Failed'
-//                 ]);
-//                 res.render('success', { code: vnp_Params['vnp_ResponseCode'] })
-//             }
-//         } catch (error) {
-//             console.error('Error processing payment:', error);
-//             return res.render('success', { code: '99', message: 'Internal Server Error' });
-//         }
+        //     // Xử lý giao dịch
+        //     if (rspCode === '00') {
+        //         // Giao dịch thành công
+        //         await db.query('UPDATE donhang SET TrangThai = ? WHERE DonHangID = ?', ['paid', orderId]);
+        //         await db.query(`INSERT INTO thanhtoan (TenTT, NoiDungTT, NgayTT, DonHangID, Status)
+        //             VALUES (?, ?, ?, ?, ?)`, [
+        //             'VNPay Payment',
+        //             vnp_Params['vnp_OrderInfo'],
+        //             transactionDate,
+        //             orderId,
+        //             'Success'
+        //         ]);
+        //         res.render('success', { code: vnp_Params['vnp_ResponseCode'] })
+        //     } else {
+        //         // Giao dịch thất bại
+        //         await db.query(`INSERT INTO thanhtoan (TenTT, NoiDungTT, NgayTT, DonHangID, Status)
+        //             VALUES (?, ?, ?, ?, ?)`, [
+        //             'VNPay Payment',
+        //             vnp_Params['vnp_OrderInfo'],
+        //             transactionDate,
+        //             orderId,
+        //             'Failed'
+        //         ]);
+        //         res.render('success', { code: vnp_Params['vnp_ResponseCode'] })
+        //     }
+        // } catch (error) {
+        //     console.error('Error processing payment:', error);
+        //     return res.render('success', { code: '99', message: 'Internal Server Error' });
+        // }
+        res.render('success', { code: vnp_Params['vnp_ResponseCode'] })
 
-//     } else {
-//         res.render('success', { code: '97', message: 'Invalid signature' });
-//     }
-// });
+    } else {
+        res.render('success', { code: '97', message: 'Invalid signature' });
+    }
+});
 
 
 router.get('/vnpay_ipn', async (req, res, next) => {
