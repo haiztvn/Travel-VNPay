@@ -310,7 +310,7 @@ app.get('/vnpay_return', async function (req, res, next) {
                     orderId,
                     amount,
                 ]);
-                return res.redirect('http://localhost:3000/profile/account-orders');
+                return res.redirect('https://auorient.com/profile/account-orders');
             }
 
         } catch (error) {
